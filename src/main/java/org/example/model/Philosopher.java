@@ -2,6 +2,7 @@ package org.example.model;
 
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 /**
  * Философ
@@ -12,6 +13,7 @@ public class Philosopher extends Thread {
     private final String name;
     private int eatCounter;
     private final CountDownLatch latch;
+    private Semaphore waiter;
 
     /**
      * @param leftFork  порядковый номер вилки, лежащей слева
@@ -19,12 +21,13 @@ public class Philosopher extends Thread {
      * @param name      имя философа / индекс
      * @param latch     счетчик потоков
      */
-    public Philosopher(Fork leftFork, Fork rightFork, String name, CountDownLatch latch) {
+    public Philosopher(Fork leftFork, Fork rightFork, String name, CountDownLatch latch, Semaphore waiter) {
         this.leftFork = leftFork;
         this.rightFork = rightFork;
         this.name = name;
         eatCounter = 0;
         this.latch = latch;
+        this.waiter = waiter;
     }
 
     @Override
@@ -46,6 +49,7 @@ public class Philosopher extends Thread {
      * @throws InterruptedException
      */
     private void toEat() throws InterruptedException {
+        waiter.acquire();
         synchronized (leftFork) {
             synchronized (rightFork) {
                 System.out.printf("%s принимает пищу с помощью вилок: %s, %s\n", name, leftFork, rightFork);
@@ -53,6 +57,7 @@ public class Philosopher extends Thread {
                 eatCounter++;
             }
         }
+        waiter.release();
     }
 
     /**

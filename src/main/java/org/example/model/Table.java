@@ -3,6 +3,7 @@ package org.example.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 /**
  * Класс обеденного стола
@@ -12,6 +13,7 @@ public class Table extends Thread {
     private final List<Fork> forks;
     private final CountDownLatch latch;
     private final int numberOfPersons;
+    private Semaphore waiter;
 
     /**
      * Конструктор стола
@@ -23,6 +25,7 @@ public class Table extends Thread {
         this.forks = new ArrayList<>();
         latch = new CountDownLatch(numberOfPersons);
         this.numberOfPersons = numberOfPersons;
+        this.waiter = new Semaphore(numberOfPersons/2);
     }
 
     /**
@@ -36,7 +39,7 @@ public class Table extends Thread {
             int rightFork = i + 1;
             if (rightFork == forks.size()) rightFork = 0;
             philosophers.add(
-                    new Philosopher(forks.get(i), forks.get(rightFork), String.format("Философ # %d", i + 1), latch));
+                    new Philosopher(forks.get(i), forks.get(rightFork), String.format("Философ # %d", i + 1), latch, waiter));
         }
     }
 
